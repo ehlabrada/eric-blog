@@ -6,6 +6,7 @@ from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from flask_gravatar import Gravatar
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_session import Session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
@@ -21,11 +22,17 @@ Bootstrap(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-##CONNECT TO DB
+sess = Session(app)
+
+# CONNECT TO DB
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SESSION_TYPE'] = 'sqlalchemy'
 app.app_context().push()
 db = SQLAlchemy(app)
+
+
+app.config['SESSION_SQLALCHEMY'] = db
 
 gravatar = Gravatar(app,
                     size=100,
@@ -37,7 +44,7 @@ gravatar = Gravatar(app,
                     base_url=None)
 
 
-##CONFIGURE TABLES
+# CONFIGURE TABLES
 class User(UserMixin, db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
