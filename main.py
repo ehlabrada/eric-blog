@@ -15,7 +15,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSiXox7C0sKR6b'
+
+# Third Party initializations
 ckeditor = CKEditor(app)
 Bootstrap(app)
 
@@ -24,14 +26,14 @@ login_manager.init_app(app)
 
 sess = Session(app)
 
+
 # CONNECT TO DB
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.sqlite3'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SESSION_TYPE'] = 'sqlalchemy'
 app.app_context().push()
 db = SQLAlchemy(app)
 
-
+# Configure the sessions
 app.config['SESSION_SQLALCHEMY'] = db
 
 gravatar = Gravatar(app,
@@ -83,7 +85,9 @@ class Comment(db.Model):
     parent_post = relationship("BlogPost", back_populates="comments")
 
 
-db.create_all()
+@app.before_first_request
+def create_tables():
+    db.create_all()
 
 
 @login_manager.user_loader
@@ -267,4 +271,12 @@ def delete_post(post_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # Quick test configuration. Please use proper Flask configuration options
+    # in production settings, and use a separate file or environment variables
+    # to manage the secret key!
+    app.config['SESSION_TYPE'] = 'sqlalchemy'
+
+    sess.init_app(app)
+
+    app.debug = True
+    app.run()
